@@ -1,0 +1,300 @@
+# ~/.config/zsh/zsh-git-utils
+# 🧩 Update a submodule (e.g. ~/.config/zsh)
+git_submodule() {
+  local msg="$1"
+  local dir="${2:-$PWD}"
+
+  if [[ -z "$msg" ]]; then
+    echo "Usage: git_submodule <commit-message> [dir]"
+    return 1
+  fi
+
+  (
+    cd "$dir" || return 1
+    if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+      echo "❌ Not a git repo: $dir"
+      return 1
+    fi
+
+    if [[ -n "$(git status --porcelain)" ]]; then
+      git add .
+      git commit -m "$msg"
+      git push
+      echo "✅ Submodule updated in $dir"
+    else
+      echo "⚠️ No changes in submodule: $dir"
+    fi
+  )
+}
+
+# 🧩 Update parent repo to commit submodule pointer (e.g. ~/.config)
+git_parentmodule() {
+  local msg="$1"
+  local dir="${2:-$PWD}"
+
+  if [[ -z "$msg" ]]; then
+    echo "Usage: git_parentmodule <commit-message> [dir]"
+    return 1
+  fi
+
+  (
+    cd "$dir" || return 1
+    if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+      echo "❌ Not a git repo: $dir"
+      return 1
+    fi
+
+    # This checks for submodule pointer changes
+    if [[ -n "$(git status --porcelain)" ]]; then
+      git add .
+      git commit -m "$msg"
+      git push
+      echo "✅ Parent repo updated with submodule pointers in $dir"
+    else
+      echo "⚠️ No changes to submodule pointers in: $dir"
+    fi
+  )
+}
+
+# ---
+# Two important aliases for git operations
+# Usage: grepo [commit_msg] [optional_path]
+# Example: grepo "Initial commit" "repo-stuff/my-new-repo/"
+
+grepo() {
+    # Usage check
+    [[ $# -gt 2 ]] && { echo "❗ Usage: grepo [repo_name] [commit_msg]"; return 1; }
+
+    # Set variables
+    local dir="$PWD"
+    local base_name=$(basename "$dir" | tr -d .)
+    local parent_name=$(basename "$(dirname "$dir")" | tr -d .)
+    local repo_name="${1:-${base_name}-${parent_name}}"
+    # Ensure base_name and parent_name are non-empty
+    [[ -z "$base_name" || -z "$parent_name" ]] && { echo "❌ System: Failed repo_name($repo_name) creation. base_name=$base_name, parent_name=$parent_name \n\t\tAborted!\n"; return 1; }
+
+    local commit_msg="${2:-Initial commit}" gh_user="smnuman"
+
+    local current_branch=$(git symbolic-ref --short HEAD 2>/dev/null || echo "main")
+
+    # User validation
+    echo "ℹ️  Running: grepo $repo_name $commit_msg of \"${dir/#$HOME/~}\""
+    read -r "?❓ Proceed? [y/N] " reply
+    [[ ! "$reply" =~ ^[Yy]$ ]] && { echo "🚫 User: Aborted."; return 1; }
+
+    echo "📦 Repository: $gh_user/$repo_name" && [[ $repo_name != "-" ]] || { echo -e "❌ ❌ System: Incorrect reponame '${repo_name}', Aborted! ❌ ❌"; return 1; }
+    read -r "?❓ Proceed? [y/N] " reply
+    [[ ! "$reply" =~ ^[Yy]$ ]] && { echo "🚫 User: REPO not ok."; return 1; }
+
+    # Initialize git repo if needed
+    git rev-parse --is-inside-work-tree &>/dev/null || { echo "⚠️  Initializing git repo in $dir..."; git init && echo "✅  Git repo initialized." || { echo "❌  Failed to initialize git repo."; return 1; }; }
+
+    # Check and set remote
+    local expected_remote="git@github.com:$gh_user/$repo_name.git"
+    if git remote get-url origin &>/dev/null; then
+        local current_remote=$(git remote get-url origin)
+        [[ "$current_remote" != "$expected_remote" ]] && { git remote set-url origin "$expected_remote" || { echo "❌ Failed to update remote."; return 1; }; }
+        echo "⚠️  Remote 'origin' set to $current_remote."
+    else
+        git remote add origin "$expected_remote" || { echo "❌ Failed to set remote."; return 1; }
+        echo "✅ Remote 'origin' added as $expected_remote."
+    fi
+
+
+    # Add and commit files
+    echo "💫 Adding files from $dir to $repo_name.git..."
+    { git add . && echo " Files added."; } || { echo "❌ Failed to add files."; return 1; }
+    { git commit -m "$commit_msg" && echo "Commit message: $commit_msg."; } || { echo "❌ Failed to commit."; return 1; }
+
+    # Push to remote
+    git push -u origin "$current_branch" || {
+        echo "⁉️ Push failed for '$gh_user/$repo_name'. Checking remote repo..."
+        which gh &>/dev/null || { echo "❌ GitHub CLI not installed. Please create repo manually."; return 1; }
+        gh repo view "$gh_user/$repo_name" &>/dev/null || {
+            echo "📡 Creating repo $gh_user/$repo_name.git at '$current_branch'..."
+            # gh repo create "$gh_user/$repo_name" --public --source=. && {
+            gh repo create "$gh_user/$repo_name" --public && {
+                echo "✅ Repo created."
+                git push -u origin "$current_branch" || { echo "❌ Push failed after repo creation."; return 1; }
+            } || { echo "❌ Failed to create repo. Aborting."; return 1; }
+        } || { echo "❌ Push failed for unknown reasons."; return 1; }
+    }
+
+    echo "✅ Successfully pushed to $gh_user/$repo_name."
+}
+
+# alias grepo='f() {
+#     [[ $# -gt 2 ]] && echo "❗️Usage: grepo [optional_repo] [commit_msg]" && return
+#     [[ $# -le 2 ]] && echo "ℹ️ Running:: grepo $(basename "$PWD") $2 at '-$1-'" &&
+#         read -r "?❓ OK to Proceed? [x/y] " reply
+#     [[ "$reply" == [Xx]* ]] && echo "🚫 Aborted by user." && return 1
+#     d="$PWD"; b=${${PWD:t}//./}; p=${${PWD:h:t}//./}; r="${1:-${b}-${p}}"; cm="$2"
+#     gh_user="smnuman"
+#     echo "📦 Suggested remote repo: $r" && {
+#         git rev-parse --is-inside-work-tree &>/dev/null || {
+#             echo "\t ⚠️  Initialising git repo in $PWD not a git..." && git init && echo "\t... ✅ $PWD initialised." &&
+#             git remote add origin "git@github.com:$gh_user/$r.git"
+#         }
+#     } &&
+#     echo -e "\t💫  Adding files from $d to remote repo: "$r" " &&
+#     git add . &&
+#     git commit -m "${cm:-Initial commit}" &&
+#     current_branch=$(git symbolic-ref --short HEAD) &&
+#     git push -u origin "$current_branch" || {
+
+#         echo "❌ git push failed for '$r'"
+#         echo "⚠️  Remote repository '${r}' not found on GitHub."
+
+#         # Check if repo exists
+#         if ! gh repo view "$gh_user/$r" &>/dev/null; then
+#             echo "📡 Creating repo via GitHub CLI..."
+#             #   if gh repo create "$gh_user/$r" --public; then
+#             #   gh repo create my-project --private --source=. --remote=upstream
+#             if gh repo create "$gh_user/$r" --public --source=. --remote=origin --confirm; then
+#                 echo "✅ Repo created."
+#                 git push --set-upstream origin main || {
+#                     echo "❌ git push failed for '$gh_user/$r'! Aborted!"
+#                     return 1
+#                 }
+#             else
+#                 echo "❌ Failed to create remote repository. Aborting."
+#                 return 1
+#             fi
+#         fi
+#     }
+# }; f'
+
+
+# alias grepo='f() {
+#     [[ $# -gt 2 ]] && echo "❗️Usage: grepo [commit_msg] [optional_path]" && return
+#     d="${2:-$PWD}"; cd "$d" || { echo "❌ Cannot cd into $d"; return; }
+#     b=${${PWD:t}//./}; p=${${PWD:h:t}//./}; r="${b}-${p}"
+#     echo "📦 remote repo: $r"
+#     git init && git remote add origin "git@github.com:smnuman/$r.git" &&
+#     git add . && git commit -m "${1:-Initial commit}" &&
+#     current_branch=$(git symbolic-ref --short HEAD) &&
+#     git push -u origin "$current_branch" || echo "❌ git push failed for $r"
+# }; f'
+
+#   git push -u origin main || echo "❌ git push failed for $r"
+
+
+# 🧩 Git utility for submodules
+# Usage: gsub <folder> [commit_msg]
+# Example: gsub "repo-stuff/my-new-repo/" "Adding submodule - repo-stuff/my-new-repo/"
+
+gsub() {
+    local subdir="$1" commit_msg="$2" repo_name="$3"
+    [[ -z "$subdir" ]] && echo "❌ Usage: gsub <submodule-folder> [<commit_msg>='Adding'] [<repo_name>]" && return 1
+
+    cd "$subdir" || { echo "❌ Could not cd into $subdir"; return 1; }
+
+    # Ensure to be in parent repo
+    cd .. || return
+
+    # GitHub username
+    local gh_user="smnuman"
+
+    # Setting submodule name
+    local cleaned_subdir="$(basename "$subdir" | tr -d '.')"
+    local cleaned_base="$(basename "$PWD" | tr -d '.')"
+    local submodule_name="${cleaned_subdir}-${cleaned_base}"
+
+    # Preparing the remote repository name
+    local parentname="$(basename "$PWD")"
+    local grandparent="$(basename "$(dirname "$PWD")")"
+    # - removing dots from filenames
+    local parent_clean="${parentname//./}"
+    local grandparent_clean="${grandparent//./}"
+    # - setting the repo name
+    local remote_repo="${repo_name:-${parent_clean}-${grandparent_clean}}"
+    # - constructing the remote repository URL
+    local remote_url="git@github.com:${gh_user}/${remote_repo}.git"
+
+    # -----------------------------------------------
+    # Scope issue -- keep all local vars outside, unless otherwise required
+    # -----------------------------------------------
+
+    if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+        echo "❌ $PWD is not a Git repository."
+        echo "⚠️  Initialising git repo in $PWD..." && git init && echo "\t... ✅ $PWD initialised."
+
+        # checks for existace of parent/grandparent folder name-strings, i.e., not empty!
+        [[ -z "$parent_clean" || -z "$grandparent_clean" ]] && {
+            echo "❌ Could not determine parent/grandparent folder names."
+            return 1
+        }
+
+        # Suggesting & confirming the repo name
+        echo "📦 Suggested GitHub repo name: $remote_repo"
+        read -r "?❓ Proceed with this repo name? [y/N] " reply
+        [[ "$reply" != [Yy]* ]] && echo "🚫 Aborted by user [ name-choice ]." && return 1
+
+        git remote add origin "$remote_url" &&
+        echo "🔧 Set remote: $remote_url"
+    fi
+
+    echo "\n🔗 Adding submodule: \"$submodule_name\"\n"
+
+    git submodule add "./$subdir"
+    git commit -am " ${commit_msg:-Adding} submodule - $subdir"
+
+    # Push parent
+    git push && echo "✅ Submodule added and parent pushed." && return
+
+    echo "⚠️  Push failed. Trying to set upstream..."
+    git branch --set-upstream-to=origin/main main 2>/dev/null || true
+    git push || {
+
+        echo "⚠️  Remote repository '${remote_repo}' not found on GitHub."
+
+        # Check if repo exists
+        if ! gh repo view "$gh_user/$remote_repo" &>/dev/null; then
+            echo "📡 Creating repo via GitHub CLI..."
+            #   if gh repo create "$gh_user/$remote_repo" --public; then
+            if gh repo create "$gh_user/$remote_repo" --public --confirm; then
+                echo "✅ Repo created."
+                git push --set-upstream origin main
+            else
+                echo "❌ Failed to create remote repository. Aborting."
+                return 1
+            fi
+        fi
+    }
+}
+
+
+
+
+# Usage: gunsub <submodule-path>
+# Example:
+# > cd ~/.config
+# > gunsub brew
+gunsub() {
+    local name path
+    name="$1"
+    path="./$name"
+
+    if [[ -z "$name" ]]; then
+        echo "Usage: gunsub <submodule-path>"
+        return 1
+    fi
+
+    if [[ ! -d "$path" ]]; then
+        echo "❌ No such submodule directory: $path"
+        return 1
+    fi
+
+    echo "⚠️  This will completely remove the submodule: $path"
+    read "REPLY?Proceed? [y/N]: "
+    if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+        echo "❎ Cancelled."
+        return 0
+    fi
+
+    git submodule deinit -f -- "$path" &&
+    git rm -f "$path" &&
+    rm -rf ".git/modules/$name" &&
+    git commit -m "Remove submodule: ${path#./}" &&
+    echo "✅ Submodule removed: $path"
+}

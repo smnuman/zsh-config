@@ -1,0 +1,25 @@
+#!/usr/bin/env zsh
+# ======================= Some extra aliase =======================
+#
+# Add your custom aliases below -- need to remove/relocate later to zsh-aliases
+alias ll='ls -lF'      # List all files in long format with the current and parent directories
+alias lla='ls -alF'       # List all files including hidden ones but the current and parent
+alias la='ls -aF'       # List all files including hidden ones
+alias l='ls'            # List files in a short yet multi-column format
+# ---
+alias c='clear' # Clear the terminal screen
+# ---
+alias zlog='tail -n 20 ~/.config/zsh/logs/plugin-update.log'
+alias brewlog='tail -n 20 "$BREWDOTS/logs/brew-activity.log"'
+alias brewlogall='more "$BREWDOTS/logs/brew-activity.log"'
+# ---
+alias gsync-status='read BEHIND AHEAD <<< "$(git rev-list --left-right --count @{u}...HEAD 2>/dev/null || echo "0 0")"; echo "📊 Ahead: $AHEAD, Behind: $BEHIND"'
+# alias gsync='git fetch --all && gsync-status'
+# alias gsync-pull='git fetch --all && git pull --rebase'
+# alias gsync-push='git fetch --all && git push'
+# alias grepo='f() { git init && git remote add origin "git@github.com:smnuman/$(basename $PWD).git" && git add . && git commit -m "${1:-Initial commit}" && git push -u origin master; }; f'
+# ---
+alias path='echo "$PATH" | tr ":" "\n"'
+# =================== extra aliases end here ======================
+#
+[[ -f $BREWDOTS/brewx ]] && alias brew="$BREWDOTS/brewx"

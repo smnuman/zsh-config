@@ -1,0 +1,12 @@
+#!/usr/bin/env zsh
+
+PROMPT_ZSH="$ZDOTFOLDER/prompt/prompt.zsh"
+PROMPT_GIT="$ZDOTFOLDER/prompt/prompt-git-status.zsh"
+
+# Load custom prompt if available
+[[ -f $PROMPT_ZSH && -f $PROMPT_GIT ]] && {
+        source $PROMPT_GIT || echo -e "$PROMPT_GIT not found!"
+        source $PROMPT_ZSH || echo -e "$PROMPT_ZSH not found!"
+        } || \
+        # Fallback prompt if custom prompt files are not found
+        export PS1="[ %T ] %~ %# "
