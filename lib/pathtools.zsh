@@ -1,13 +1,13 @@
 #!/usr/bin/env zsh
 # ~/.config/zsh/lib/pathtools.zsh
-# The file is added in my shell(by .zshrc) from $ZDOTFOLDER/lib/pathtools.zsh 
-# Best to source it from $ZDOTFOLDER/zsh-exports before any export PATH commands
+# The file is added in my shell(by .zshrc) from $ZDOTDIR/lib/pathtools.zsh
+# Best to source it from $ZDOTDIR/zsh-exports before any export PATH commands
 
 # Usage e.g.: export_path "$HOME/.cargo/bin"
 # Better use it with the alias below
 export_path() {
     local dir="$1"
-    local log_file="$ZDOTFOLDER/logs/pathlog.zlog"
+    local log_file="$ZDOTDIR/logs/pathlog.zlog"
     local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
     local before="$PATH"
 
@@ -70,7 +70,7 @@ remove_path() {
 path_audit_run() {
     local cmd=("$@")
     local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
-    local log_file="$ZDOTFOLDER/logs/pathlog.zlog"
+    local log_file="$ZDOTDIR/logs/pathlog.zlog"
 
     mkdir -p "${log_file:h}"
 

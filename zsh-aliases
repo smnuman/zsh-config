@@ -2,12 +2,16 @@
 # ======================= Some extra aliase =======================
 #
 # Add your custom aliases below -- need to remove/relocate later to zsh-aliases
-alias ll='ls -lF'      # List all files in long format with the current and parent directories
-alias lla='ls -alF'       # List all files including hidden ones but the current and parent
+alias ll='ls -lF'       # List all files in long format with the current and parent directories
+alias lla='ls -alF'     # List all files including hidden ones but the current and parent
 alias la='ls -aF'       # List all files including hidden ones
 alias l='ls'            # List files in a short yet multi-column format
+
+alias 't~'="tree -a -L 3 --dirsfirst -I 'Documents|Downloads|Applications|Music|Movies|Pictures|Library|raycast|.git|plugins|logs|'"
 # ---
-alias c='clear' # Clear the terminal screen
+alias c='clear'         # Clear the terminal screen
+# Return to previous folder/directory
+alias -- -='cd -'
 # ---
 alias zlog='tail -n 20 ~/.config/zsh/logs/plugin-update.log'
 alias brewlog='tail -n 20 "$BREWDOTS/logs/brew-activity.log"'
@@ -23,3 +27,14 @@ alias path='echo "$PATH" | tr ":" "\n"'
 # =================== extra aliases end here ======================
 #
 [[ -f $BREWDOTS/brewx ]] && alias brew="$BREWDOTS/brewx"
+
+# History aliases
+alias h='history -10'                     # Show last 10 history entries
+alias h50='history -50'                     # Show last 10 history entries
+alias h100='history -100'                     # Show last 10 history entries
+alias h200='history -200'                     # Show last 10 history entries
+alias ha='history -a'                     # Append history to file immediately
+alias hs='history -s'                     # Search history interactively
+alias hc='history -c'                     # Clear history for current session
+alias hgrep='history 1 | grep'            # Grep through full history
+# alias htop='history 1 | sort -nr | head'  # Show most recent commands

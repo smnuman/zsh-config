@@ -1,7 +1,7 @@
 #!/usr/bin/env zsh
 
-PROMPT_ZSH="$ZDOTFOLDER/prompt/prompt.zsh"
-PROMPT_GIT="$ZDOTFOLDER/prompt/prompt-git-status.zsh"
+PROMPT_ZSH="$ZDOTDIR/prompt/prompt.zsh"
+PROMPT_GIT="$ZDOTDIR/prompt/prompt-git-status.zsh"
 
 # Load custom prompt if available
 [[ -f $PROMPT_ZSH && -f $PROMPT_GIT ]] && {

@@ -1,0 +1,25 @@
+# ~/.config/zsh/zsh-optionrc
+
+# === Quality of Life ===
+setopt autocd                   # Just type dir name to cd into it
+setopt correct                  # Auto-correct commands
+setopt numericglobsort          # Sort filenames naturally (e.g. 1,2,10)
+
+# === Globbing Power ===
+setopt extendedglob             # Enables regex-style globs
+setopt nocaseglob               # Case-insensitive globs
+setopt rcexpandparam            # Fancy parameter expansion like ${^var}
+
+# === History Management ===
+setopt appendhistory            # Append to history file, don’t overwrite
+setopt inc_append_history       # Write to history file immediately
+setopt histignorealldups        # Remove older duplicates
+setopt histignorespace          # Skip commands starting with a space
+setopt hist_save_no_dups        # Save history without duplicates
+setopt hist_find_no_dups        # Do not find duplicates in history search
+setopt hist_reduce_blanks       # Reduce blanks in history
+setopt histverify               # Show the command before executing it
+setopt sharehistory             # Share history between different shells
+
+# === Prompt Substitution ===
+setopt prompt_subst             # Allow $(...) in PROMPT

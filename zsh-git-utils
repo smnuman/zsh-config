@@ -123,69 +123,13 @@ grepo() {
     echo "✅ Successfully pushed to $gh_user/$repo_name."
 }
 
-# alias grepo='f() {
-#     [[ $# -gt 2 ]] && echo "❗️Usage: grepo [optional_repo] [commit_msg]" && return
-#     [[ $# -le 2 ]] && echo "ℹ️ Running:: grepo $(basename "$PWD") $2 at '-$1-'" &&
-#         read -r "?❓ OK to Proceed? [x/y] " reply
-#     [[ "$reply" == [Xx]* ]] && echo "🚫 Aborted by user." && return 1
-#     d="$PWD"; b=${${PWD:t}//./}; p=${${PWD:h:t}//./}; r="${1:-${b}-${p}}"; cm="$2"
-#     gh_user="smnuman"
-#     echo "📦 Suggested remote repo: $r" && {
-#         git rev-parse --is-inside-work-tree &>/dev/null || {
-#             echo "\t ⚠️  Initialising git repo in $PWD not a git..." && git init && echo "\t... ✅ $PWD initialised." &&
-#             git remote add origin "git@github.com:$gh_user/$r.git"
-#         }
-#     } &&
-#     echo -e "\t💫  Adding files from $d to remote repo: "$r" " &&
-#     git add . &&
-#     git commit -m "${cm:-Initial commit}" &&
-#     current_branch=$(git symbolic-ref --short HEAD) &&
-#     git push -u origin "$current_branch" || {
-
-#         echo "❌ git push failed for '$r'"
-#         echo "⚠️  Remote repository '${r}' not found on GitHub."
-
-#         # Check if repo exists
-#         if ! gh repo view "$gh_user/$r" &>/dev/null; then
-#             echo "📡 Creating repo via GitHub CLI..."
-#             #   if gh repo create "$gh_user/$r" --public; then
-#             #   gh repo create my-project --private --source=. --remote=upstream
-#             if gh repo create "$gh_user/$r" --public --source=. --remote=origin --confirm; then
-#                 echo "✅ Repo created."
-#                 git push --set-upstream origin main || {
-#                     echo "❌ git push failed for '$gh_user/$r'! Aborted!"
-#                     return 1
-#                 }
-#             else
-#                 echo "❌ Failed to create remote repository. Aborting."
-#                 return 1
-#             fi
-#         fi
-#     }
-# }; f'
-
-
-# alias grepo='f() {
-#     [[ $# -gt 2 ]] && echo "❗️Usage: grepo [commit_msg] [optional_path]" && return
-#     d="${2:-$PWD}"; cd "$d" || { echo "❌ Cannot cd into $d"; return; }
-#     b=${${PWD:t}//./}; p=${${PWD:h:t}//./}; r="${b}-${p}"
-#     echo "📦 remote repo: $r"
-#     git init && git remote add origin "git@github.com:smnuman/$r.git" &&
-#     git add . && git commit -m "${1:-Initial commit}" &&
-#     current_branch=$(git symbolic-ref --short HEAD) &&
-#     git push -u origin "$current_branch" || echo "❌ git push failed for $r"
-# }; f'
-
-#   git push -u origin main || echo "❌ git push failed for $r"
-
-
 # 🧩 Git utility for submodules
-# Usage: gsub <folder> [commit_msg]
+# Usage: gsub <folder> [commit_msg] [repo_name]
 # Example: gsub "repo-stuff/my-new-repo/" "Adding submodule - repo-stuff/my-new-repo/"
 
 gsub() {
     local subdir="$1" commit_msg="$2" repo_name="$3"
-    [[ -z "$subdir" ]] && echo "❌ Usage: gsub <submodule-folder> [<commit_msg>='Adding'] [<repo_name>]" && return 1
+    [[ -z "$subdir" ]] && echo "❌ Usage: gsub <submodule-folder> [<commit_msg> = 'Adding' [<repo_name>]]" && return 1
 
     cd "$subdir" || { echo "❌ Could not cd into $subdir"; return 1; }
 
@@ -262,9 +206,6 @@ gsub() {
         fi
     }
 }
-
-
-
 
 # Usage: gunsub <submodule-path>
 # Example:

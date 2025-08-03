@@ -1,7 +1,7 @@
 # ~/.config/zsh/lib/plugin_manager.zsh
 zsh_add_file() {
     local FILE="$1"
-    local TARGET="$ZDOTFOLDER/$FILE"
+    local TARGET="$ZDOTDIR/$FILE"
 
     local FILE_FOUND="zsh_add_file:-: File \"$FILE\" \e[0;32m successfully sourced \e[0m"
     local FILE_NOT_FOUND="zsh_add_file:-:\e[0;45m File \e[0m\"$FILE\" \e[0;45m not found! \e[0m"
@@ -20,7 +20,7 @@ zsh_add_file() {
 zsh_add_plugin() {
     local REPO="$1"
     local PLUGIN_NAME="${REPO##*/}"
-    local PLUGIN_PATH="$ZDOTFOLDER/plugins/$PLUGIN_NAME"
+    local PLUGIN_PATH="$ZDOTDIR/plugins/$PLUGIN_NAME"
 
     local TRY1="plugins/$PLUGIN_NAME/$PLUGIN_NAME.plugin.zsh"
     local TRY2="plugins/$PLUGIN_NAME/$PLUGIN_NAME.zsh"
@@ -68,13 +68,13 @@ c
 # :: original ones::
 #
 # zsh_add_file() {
-#   [[ -f "$ZDOTFOLDER/$1" ]] && source "$ZDOTFOLDER/$1"
+#   [[ -f "$ZDOTDIR/$1" ]] && source "$ZDOTDIR/$1"
 # }
 
 # zsh_add_plugin() {
 #   local REPO="$1"
 #   local PLUGIN_NAME="${REPO##*/}"
-#   local PLUGIN_PATH="$ZDOTFOLDER/plugins/$PLUGIN_NAME"
+#   local PLUGIN_PATH="$ZDOTDIR/plugins/$PLUGIN_NAME"
 
 #   [[ ! -d "$PLUGIN_PATH" ]] && git clone --depth=1 "https://github.com/$REPO.git" "$PLUGIN_PATH"
 
@@ -86,7 +86,7 @@ zsh_add_completion() {
   local REPO="$1"
   local DO_COMPINIT="$2"
   local PLUGIN_NAME="${REPO##*/}"
-  local PLUGIN_PATH="$ZDOTFOLDER/plugins/$PLUGIN_NAME"
+  local PLUGIN_PATH="$ZDOTDIR/plugins/$PLUGIN_NAME"
 
   [[ ! -d "$PLUGIN_PATH" ]] && git clone --depth=1 "https://github.com/$REPO.git" "$PLUGIN_PATH"
 
@@ -99,7 +99,7 @@ zsh_add_completion() {
 }
 
 zsh_update_plugins() {
-  for DIR in "$ZDOTFOLDER"/plugins/*/.git; do
+  for DIR in "$ZDOTDIR"/plugins/*/.git; do
     local PLUGIN_PATH="${DIR%/.git}"
     echo "Updating ${PLUGIN_PATH##*/}..."
     git -C "$PLUGIN_PATH" pull --quiet --rebase
@@ -107,13 +107,13 @@ zsh_update_plugins() {
 }
 
 zsh_auto_update_plugins() {
-  local ZDOTFOLDER="$HOME/.config/zsh"
-  local CACHE_FILE="$ZDOTFOLDER/logs/plugin-update.timestamp"
-  local LOG_FILE="$ZDOTFOLDER/logs/plugin-update.log"
+  local ZDOTDIR="$HOME/.config/zsh"
+  local CACHE_FILE="$ZDOTDIR/logs/plugin-update.timestamp"
+  local LOG_FILE="$ZDOTDIR/logs/plugin-update.log"
   local NOW=$(date +%s)
   local WEEK_SECONDS=$((7 * 24 * 60 * 60))
 
-  mkdir -p "$ZDOTFOLDER"
+  mkdir -p "$ZDOTDIR"
 
   if [[ ! -f "$CACHE_FILE" ]] || (( NOW - $(cat "$CACHE_FILE") > WEEK_SECONDS )); then
     echo "[$(date)] Updating Zsh plugins..." | tee -a "$LOG_FILE"

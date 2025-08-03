@@ -20,7 +20,7 @@ git_clone() {
 zsh_add_file() {
     local CALLER="${funcstack[2]}"
 
-    [[ -f "$ZDOTFOLDER/$1" ]] && source "$ZDOTFOLDER/$1" && {
+    [[ -f "$ZDOTDIR/$1" ]] && source "$ZDOTDIR/$1" && {
         [[ $ZSHF_VERBOSE == false ]] || {
             {
                 [[ "$CALLER" == *".zshrc"* ]] &&
@@ -37,7 +37,7 @@ zsh_add_file() {
 zsh_add_plugin() {
     local REPO="$1"
     local PLUGIN_NAME="${REPO##*/}"
-    local PLUGIN_PATH="$ZDOTFOLDER/plugins/$PLUGIN_NAME"
+    local PLUGIN_PATH="$ZDOTDIR/plugins/$PLUGIN_NAME"
 
     # if folder is not available, clone it from github
     [[ ! -d "$PLUGIN_PATH" ]] && git_clone $REPO $PLUGIN_PATH
@@ -53,7 +53,7 @@ zsh_add_completion() {
     local REPO="$1"
     local DO_COMPINIT="$2"
     local PLUGIN_NAME="${REPO##*/}"
-    local PLUGIN_PATH="$ZDOTFOLDER/plugins/$PLUGIN_NAME"
+    local PLUGIN_PATH="$ZDOTDIR/plugins/$PLUGIN_NAME"
 
     # if folder is not available, clone it from github
     [[ ! -d "$PLUGIN_PATH" ]] && git_clone $REPO $PLUGIN_PATH
@@ -66,7 +66,7 @@ zsh_add_completion() {
 }
 
 zsh_update_plugins() {
-  for DIR in "$ZDOTFOLDER"/plugins/*/.git; do
+  for DIR in "$ZDOTDIR"/plugins/*/.git; do
     local PLUGIN_PATH="${DIR%/.git}"
     echo "Updating ${PLUGIN_PATH##*/}..."
     git -C "$PLUGIN_PATH" pull --quiet --rebase
