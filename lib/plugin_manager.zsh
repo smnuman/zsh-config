@@ -44,6 +44,12 @@ zshlog() {
     local opt_echo="" opt_skiplog=false tab="" nl=""
     while [[ "$1" == -* ]]; do
         case "$1" in
+            --help) set -- -h "${@:2}" ;;
+            --file) set -- -f "$2" "${@:3}" ;;
+            --verbose) set -- -v "${@:2}" ;;
+            --quiet) set -- -q "${@:2}" ;;
+        esac
+        case "$1" in
             -h)
                 zshlog_usage
                 return 0
