@@ -23,7 +23,8 @@ alias gsync-status='read BEHIND AHEAD <<< "$(git rev-list --left-right --count @
 # alias gsync-push='git fetch --all && git push'
 # alias grepo='f() { git init && git remote add origin "git@github.com:smnuman/$(basename $PWD).git" && git add . && git commit -m "${1:-Initial commit}" && git push -u origin master; }; f'
 # ---
-alias path='echo "$PATH" | tr ":" "\n"'
+alias path='echo ${PATH//:/\\n}'
+# alias path='echo "$PATH" | tr ":" "\n"'
 # =================== extra aliases end here ======================
 #
 [[ -f $BREWDOTS/brewx ]] && alias brew="$BREWDOTS/brewx"

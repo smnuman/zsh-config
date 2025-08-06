@@ -1,7 +1,7 @@
 
-export BREWDOTS="$HOME/.config/brew"
 export ZDOTDIR="$HOME/.config/zsh"
-export ZSHF_VERBOSE="true"                # zsh-functions verbosity
+export BREWDOTS="$HOME/.config/brew"
+export ZSHF_VERBOSE="false"                # zsh-functions verbosity
 
 mkdir -p "$BREWDOTS" "$ZDOTDIR"
 

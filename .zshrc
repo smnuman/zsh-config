@@ -8,10 +8,11 @@ SAVEHIST=100000
 [[ -o interactive ]] && . "$ZDOTDIR/zsh-optionrc"
 
 [[ -f $ZDOTDIR/lib/keybinds.zsh ]] && . "$ZDOTDIR/lib/keybinds.zsh"
+[[ -f $ZDOTDIR/lib/plugin_manager.zsh ]] && . $ZDOTDIR/lib/plugin_manager.zsh
 
-echo -e "\n\t=== === === this one T E S T I N G === === ===\n"
+echo -e "\n\t=== === === T E S T I N G === === ===\n"
 
-# Enable completion
+# Enable hook, completion & colors
 autoload -Uz add-zsh-hook
 autoload -Uz compinit; compinit
 autoload -Uz colors && colors
@@ -27,6 +28,7 @@ zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 bindkey '^P' up-line-or-beginning-search    # Ctrl+P for up
 bindkey '^N' down-line-or-beginning-search  # Ctrl+N for down
+
 
 # Add zsh plugins wth my plugin manager
 if [[ -f ~/.config/zsh/env.zsh ]]; then
@@ -47,7 +49,7 @@ if [[ -f ~/.config/zsh/env.zsh ]]; then
 	zsh_add_plugin zsh-users/zsh-syntax-highlighting
 	zsh_add_plugin zsh-users/zsh-history-substring-search
     zsh_add_plugin smnuman/zsh-history-search-end-match
-    zsh_add_plugin supercrabtree/k
+    # zsh_add_plugin supercrabtree/k
 	# Load z-completions
 	zsh_add_completion zsh-users/zsh-completions true
 fi
